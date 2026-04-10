@@ -1,0 +1,52 @@
+Modelo de datos
+
+1. MARCAS
+CREATE TABLE marcas (
+    id_marca INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    url_marca VARCHAR(255) UNIQUE
+);
+
+2. CATEGORIAS
+CREATE TABLE categorias (
+    id_categoria INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    nombre VARCHAR(100) NOT NULL,
+    url_categoria VARCHAR(255) UNIQUE,
+    id_padre INT,
+    CONSTRAINT fk_categoria_padre 
+        FOREIGN KEY (id_padre) REFERENCES categorias(id_categoria) 
+        ON DELETE SET NULL
+);
+
+3. PRODUCTOS
+CREATE TABLE productos (
+    sku VARCHAR(50) PRIMARY KEY,
+    nombre VARCHAR(150) NOT NULL,
+    descripcion TEXT,
+    precio NUMERIC(10,2) NOT NULL CHECK (precio >= 0),
+    id_marca INT,
+    url_producto VARCHAR(255) UNIQUE,
+    CONSTRAINT fk_producto_marca 
+        FOREIGN KEY (id_marca) REFERENCES marcas(id_marca)
+);
+
+4. MULTIMEDIA
+CREATE TABLE multimedia (
+    id_multimedia INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    url_recurso VARCHAR(255) NOT NULL,
+    tipo VARCHAR(20) NOT NULL CHECK (tipo IN ('imagen', 'video')),
+    sku VARCHAR(50) NOT NULL,
+    CONSTRAINT fk_multimedia_producto 
+        FOREIGN KEY (sku) REFERENCES productos(sku) ON DELETE CASCADE
+);
+
+5. PRODUCTO_CATEGORIA
+CREATE TABLE producto_categoria (
+    sku VARCHAR(50),
+    id_categoria INT,
+    PRIMARY KEY (sku, id_categoria),
+    CONSTRAINT fk_pc_producto 
+        FOREIGN KEY (sku) REFERENCES productos(sku) ON DELETE CASCADE,
+    CONSTRAINT fk_pc_categoria 
+        FOREIGN KEY (id_categoria) REFERENCES categorias(id_categoria) ON DELETE CASCADE
+);
