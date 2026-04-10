@@ -1,0 +1,97 @@
+Documentación
+
+El presente modelo de datos corresponde a un sistema de gestión de productos para mascotas, en el cual se administran marcas, productos, categorías jerárquicas y recursos multimedia.
+
+El diseño está normalizado hasta Tercera Forma Normal (3FN), evitando redundancias y permitiendo escalabilidad, especialmente mediante el uso de categorías jerárquicas y una relación N:M entre productos y categorías.
+
+1. Entidades del Sistema
+
+a) MARCAS
+
+Almacena la información de las marcas de productos.
+
+Su estructura:
+id_marca (PK): Identificador único autogenerado
+nombre: Nombre de la marca
+url_marca: URL asociada a la marca (única)
+
+Relación
+Una marca puede tener 0 a N productos
+
+b) CATEGORIAS
+
+Define las categorías de los productos, incluyendo una estructura jerárquica (padre-hijo).
+
+Su estructura:
+id_categoria (PK): Identificador único
+nombre: Nombre de la categoría (ej. Perro, Gato, Alimento)
+url_categoria: URL única
+id_padre (FK): Referencia a otra categoría
+
+Relaciones
+Relación recursiva 1:N
+Una categoría puede tener muchas subcategorías
+Una subcategoría pertenece a una sola categoría padre
+Nota: Las categorías raíz (como Perro, Gato, Ave) tienen id_padre = NULL.
+
+c) PRODUCTOS
+
+Contiene la información principal de los productos.
+
+Su estructura:
+sku (PK): Identificador único del producto
+nombre: Nombre del producto
+descripcion: Descripción detallada
+precio: Precio del producto (no negativo)
+id_marca (FK): Relación con la marca
+url_producto: URL única del producto
+
+Relaciones
+Cada producto pertenece a una marca
+Una marca puede tener muchos productos (0..N)
+
+d) MULTIMEDIA
+
+Almacena los recursos multimedia asociados a los productos.
+
+Su estructura:
+id_multimedia (PK): Identificador único
+url_recurso: URL del recurso
+tipo: Tipo de recurso ('imagen' o 'video')
+sku (FK): Producto al que pertenece
+
+Relación
+Un producto puede tener muchos recursos multimedia (1:N)
+Cada recurso pertenece a un solo producto
+
+Nota: Si un producto se elimina, su multimedia también (ON DELETE CASCADE)
+
+e) PRODUCTO_CATEGORIA (Tabla puente)
+
+Tabla intermedia que permite la relación muchos a muchos entre productos y categorías.
+
+Su estructura
+sku (PK, FK): Producto
+id_categoria (PK, FK): Categoría
+
+Relación
+Relación N:M entre PRODUCTOS y CATEGORIAS
+Un producto puede pertenecer a muchas categorías
+Una categoría puede contener muchos productos
+
+Nota: Eliminación en cascada para mantener integridady hay una clave primaria compuesta evita duplicados
+
+Para su implementación en PostgreSQL, se necesitó 
+
+- GENERATED ALWAYS AS IDENTITY → IDs autoincrementales
+- PRIMARY KEY → Identificación única
+- FOREIGN KEY → Integridad referencial
+- CHECK → Validación de datos (precio, tipo)
+- UNIQUE → Evita duplicados en URLs
+- ON DELETE CASCADE / SET NULL → Manejo de dependencias
+
+2. Decisión importante
+
+a) Manejo de tipo_mascota
+
+En lugar de agregar un atributo directo en PRODUCTOS se modela como categoría, para evitar redundancias facilitando una escalabilidad así como permitir múltiples categorías por producto.
